@@ -1,63 +1,52 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}AnnDesign — Wiki{% endblock %}</title>
-<style>
-  :root{
-    --ivory:#FBF8F3; --ink:#1B1512; --ink-soft:#55493d;
-    --gold:#B4903F; --gold-deep:#8C6A2F; --rose:#F1DBDF; --rose-line:#E3BEC5;
-  }
-  *{box-sizing:border-box;}
-  body{ margin:0; background:var(--ivory); color:var(--ink); font-family:"Times New Roman", Times, serif; }
-  nav{ display:flex; gap:24px; padding:20px 30px; border-bottom:1px solid var(--rose-line); align-items:center; }
-  nav .brand{ font-size:1.2rem; letter-spacing:0.06em; margin-right: auto; }
-  nav .brand em{ color:var(--gold-deep); font-style:italic; }
-  nav a{ color:var(--ink-soft); text-decoration:none; font-size:0.95rem; }
-  nav a:hover{ color:var(--gold-deep); }
-  main{ max-width:900px; margin:0 auto; padding:36px 24px 60px; }
-  h1{ font-weight:400; font-size:1.8rem; margin-bottom: 6px;}
-  .sub{ color:var(--ink-soft); font-style:italic; margin-top:0; margin-bottom: 30px;}
-  table{ width:100%; border-collapse:collapse; margin-bottom:24px;}
-  th{ text-align:left; font-style:italic; font-weight:400; color:var(--ink-soft); border-bottom:1px solid var(--gold); padding:0 10px 8px 0; font-size:0.85rem;}
-  td{ padding:10px 10px 10px 0; border-bottom:1px solid var(--rose-line); font-size:0.92rem;}
-  input, textarea, select{ width:100%; font-family:inherit; padding:8px; border:1px solid var(--rose-line); background:var(--ivory); color:var(--ink); margin-bottom:12px;}
-  label{ display:block; font-size:0.82rem; font-style:italic; color:var(--ink-soft); margin-bottom:4px;}
-  button{ background:var(--gold); color:var(--ivory); border:none; padding:10px 20px; font-family:inherit; cursor:pointer;}
-  button:hover{ background:var(--gold-deep); }
-  .card{ border:1px solid var(--rose-line); padding:20px; margin-bottom:16px;}
-  .badge{ font-size:0.75rem; font-style:italic; color:var(--gold-deep); border:1px solid var(--gold); padding:2px 10px; border-radius:12px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Wiki AnnDesign{% endblock %}</title>
+    <style>
+        :root { --gold: #B4903F; --ivory: #FBF8F3; --dark: #1a1a1a; --white: #fff; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--ivory); color: #333; margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
+        .sidebar { width: 250px; background-color: var(--dark); color: var(--white); padding: 20px; display: flex; flex-direction: column; transition: all 0.3s ease; flex-shrink: 0; }
+        .sidebar.hidden { margin-left: -290px; }
+        .sidebar h2 { color: var(--gold); margin-bottom: 30px; text-align: center; font-size: 22px; }
+        .sidebar a { color: #ccc; text-decoration: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; font-weight: 600; transition: 0.2s; }
+        .sidebar a:hover { background-color: var(--gold); color: var(--white); }
+        .logout-form { margin-top: auto; }
+        .logout-btn { width: 100%; background: #d9534f; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; transition: all 0.3s ease; position: relative; }
+        .toggle-btn { position: absolute; top: 20px; left: 20px; background-color: var(--dark); color: var(--gold); border: 1px solid var(--gold); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-weight: bold; z-index: 1000; }
+        .content-wrapper { margin-top: 30px; }
+        .card-panel { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #666; }
+        .btn-gold { background-color: var(--gold); color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .form-group label { font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
+    </style>
 </head>
 <body>
-
-<nav>
- <!-- CORRECCIÓN DE RUTAS DEL MENÚ EN base.html -->
-<div class="sidebar" id="sidebar">
-    <h2>AnnDesign Wiki</h2>
-    <!-- Apunta a la plantilla del Dashboard -->
-    <a href="/templates/dashboard.html">📊 Dashboard</a>
-    
-    <!-- Apunta al panel visual HTML, NO a /proyectos a secas -->
-    <a href="/templates/proyectos/panel">📁 Mis Proyectos</a>
-    
-    <!-- Apunta al formulario visual del Generador -->
-    <a href="/templates/generador.html">✨ Generador de Slides</a>
-    
-    <!-- Apunta a la sección de marca -->
-    <a href="/empresa/panel">🎨 Identidad de Marca</a>
-    
-    <form action="/logout" method="POST" class="logout-form">
-        <button type="submit" class="logout-btn">🚪 Cerrar Sesión</button>
-    </form>
-</div>
-
-</nav>
-
-<main>
-  {% block content %}{% endblock %}
-</main>
-
+    <div class="sidebar" id="sidebar">
+        <h2>AnnDesign Wiki</h2>
+        <a href="/dashboard">📊 Dashboard</a>
+        <a href="/proyectos/panel">📁 Mis Proyectos</a>
+        <a href="/contenido/generador">✨ Generador de Slides</a>
+        <form action="/logout" method="POST" class="logout-form">
+            <button type="submit" class="logout-btn">🚪 Cerrar Sesión</button>
+        </form>
+    </div>
+    <div class="main-content">
+        <button class="toggle-btn" id="toggleSidebar">☰ Menú</button>
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    <script>
+        document.getElementById('toggleSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>
