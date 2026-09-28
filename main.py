@@ -489,23 +489,23 @@ def ver_detalle_proyecto_visual(
     db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
-    """Carga la pantalla con el detalle de un proyecto y todas sus actividades vinculadas."""
+    """Carga la plantilla de un proyecto con sus actividades formateadas secuencialmente."""
     proyecto = db.get(Proyecto, proyecto_id)
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
-
-    actividades = (
-        db.query(Actividad)
-        .filter(Actividad.proyecto_id == proyecto_id)
-        .order_by(Actividad.fecha_creacion.asc())
-        .all()
-    )
-
+    
+    # Formateamos la fecha en Python antes de mandarla al HTML
+    fecha_str = proyecto.fecha_inicio.strftime('%d/%m/%Y') if proyecto.fecha_inicio else "Sin fecha"
+    
+    actividades = db.query(Actividad).filter(Actividad.proyecto_id == proyecto_id).order_by(Actividad.id.asc()).all()
+    
+    # Invocación posicional estricta exigida por Starlette/Jinja2
     return templates.TemplateResponse(
-        request,
-        "detalle_proyecto.html",
+        request, 
+        "detalle_proyecto.html", 
         {
-            "proyecto": proyecto,
+            "proyecto": proyecto, 
+            "fecha_inicio_str": fecha_str, 
             "actividades": actividades,
             "usuario": usuario_autenticado
         }

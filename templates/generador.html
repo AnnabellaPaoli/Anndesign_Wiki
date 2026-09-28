@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Generador de Contenido — AnnDesign{% endblock %}
+
+{% block content %}
+<h2>✨ Generador Automatizado de Slides</h2>
+<p>Escribe el texto de tu pieza gráfica para Instagram y guárdala directamente en tu historial.</p>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+    
+    <!-- Formulario del Generador -->
+    <div class="card-panel">
+        <h3>Configurar Slide</h3>
+        <form action="/contenido/generador/procesar" method="POST">
+            <div class="form-group">
+                <label for="tipo_slide">Tipo de Slide</label>
+                <select id="tipo_slide" name="tipo_slide">
+                    <option value="portada">Portada de Impacto</option>
+                    <option value="servicio">Presentación de Servicio</option>
+                    <option value="proceso">Paso a Paso / Proceso</option>
+                    <option value="faq">Preguntas Frecuentes</option>
+                    <option value="cierre">Llamado a la Acción (Cierre)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="texto_usado">Texto Principal del Slide</label>
+                <textarea id="texto_usado" name="texto_usado" rows="5" required placeholder="Escribe el copy que irá dentro del diseño..."></textarea>
+            </div>
+            <button type="submit" class="btn-gold" style="width: 100%;">⚡ Generar Imagen y Registrar</button>
+        </form>
+    </div>
+
+    <!-- Historial de imágenes creadas de la tabla 'contenido' -->
+    <div class="card-panel">
+        <h3>Historial Reciente</h3>
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% for item in historial %}
+            <div style="padding: 12px; border-bottom: 1px solid #eee; font-size: 14px;">
+                <span style="color: var(--gold); font-weight: bold; text-transform: uppercase; font-size: 12px;">{{ item.tipo_slide }}</span>
+                <p style="margin: 5px 0; color: #555;">"{{ item.texto_usado }}"</p>
+                <small style="color: #999;">Generado el: {{ item.fecha_generado.strftime('%d/%m/%Y %H:%M') }}</small>
+            </div>
+            {% else %}
+            <p style="text-align: center; color: #999; padding-top: 20px;">Aún no has generado piezas de contenido.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Wiki AnnDesign{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 20px; margin-bottom: 40px;">
+    <div>
+        <h2 style="color: var(--gold); margin: 0;">Panel de Control</h2>
+        <p style="margin: 5px 0 0 0; font-weight: 600;">Bienvenida, {{ usuario }} ✨</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+    <div class="card-panel" style="text-align: center; padding: 30px;">
+        <h3 style="margin: 0 0 10px 0; color: #666; font-size: 16px; text-transform: uppercase;">Proyectos Activos</h3>
+        <div style="font-size: 48px; font-weight: bold; color: var(--gold);">{{ proyectos_count }}</div>
+    </div>
+    
+    <div class="card-panel" style="text-align: center; padding: 30px;">
+        <h3 style="margin: 0 0 10px 0; color: #666; font-size: 16px; text-transform: uppercase;">Piezas de Contenido</h3>
+        <div style="font-size: 48px; font-weight: bold; color: var(--gold);">{{ contenido_count }}</div>
+    </div>
+</div>
+{% endblock %}
+
