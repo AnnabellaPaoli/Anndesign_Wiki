@@ -1,7 +1,7 @@
 # Created by venv; see https://docs.python.org/3/library/venv.html
 .env
 venv/
-templates/
+#templates/
 __pycache__/
 # Scripts temporales de configuración local
 crear_usuario.py
