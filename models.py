@@ -20,17 +20,15 @@ Base = declarative_base()
 
 
 class Actividad(Base):
-    """Tareas o hitos de seguimiento para cada proyecto."""
     __tablename__ = "actividades"
-
     id = Column(Integer, primary_key=True)
-    descripcion = Column(String(250), nullable=False) # Ej: "Diseñar wireframes del home"
-    estado = Column(String(50), default="pendiente")   # pendiente | en proceso | completada
+    descripcion = Column(String(250), nullable=False)
+    estado = Column(String(50), default="pendiente") # pendiente | en proceso | completada
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
-    fecha_modificacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relación de oro: conecta la actividad con su proyecto correspondiente
     proyecto_id = Column(Integer, ForeignKey("proyectos.id", ondelete="CASCADE"), nullable=False)
+    
+    proyecto = relationship("Proyecto", back_populates="actividades")
+
 
 class Empresa(Base):
     """Una sola fila con la info de marca de AnnDesign."""
