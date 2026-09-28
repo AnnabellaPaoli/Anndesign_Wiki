@@ -1,9 +1,8 @@
 import os
-from generate_slides import generate_slide, BRAND
 import bcrypt  # Librería nativa y segura para Python 3.14
 from datetime import datetime
 from typing import Optional, List
-from models import Actividad
+
 # Agregamos Request, Response, Form y status para gestionar la autenticación por cookies
 from fastapi import FastAPI, Depends, HTTPException, Request, Response, Form, status
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -12,10 +11,16 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
-# Agregamos 'Usuario' a las importaciones desde tus modelos
-from models import SessionLocal, Empresa, Proyecto, Contenido, Usuario
+# Todos los modelos en una sola importación
+from models import SessionLocal, Empresa, Proyecto, Contenido, Usuario, Actividad
+
+# Tu generador de slides (el archivo generate_slides.py debe estar junto a este main.py)
+from generate_slides import generate_slide, BRAND
 
 app = FastAPI(title="AnnDesign — Wiki privada")
+
+# Asegura que exista la carpeta donde se guardan los slides generados
+os.makedirs("static/generados", exist_ok=True)
 
 # Configurar la carpeta de archivos estáticos (CSS, imágenes)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -43,19 +48,20 @@ def get_db():
 def verificar_contrasena(contrasena_plana: str, contrasena_hasheada: str) -> bool:
     """Compara la contraseña ingresada en el formulario con el hash de la DB."""
     return bcrypt.checkpw(
-        contrasena_plana.encode('utf-8'), 
+        contrasena_plana.encode('utf-8'),
         contrasena_hasheada.encode('utf-8')
     )
 
+
 def obtener_usuario_actual(request: Request):
     """
-    Filtro de seguridad (Candado). 
+    Filtro de seguridad (Candado).
     Verifica si el navegador tiene la cookie de sesión activa.
     """
     usuario = request.cookies.get("session_user")
     if not usuario:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Acceso denegado. Inicia sesión primero."
         )
     return usuario
@@ -112,22 +118,22 @@ class ContenidoOut(ContenidoIn):
 
 @app.post("/login")
 def login(
-    request: Request, # Agregamos el request aquí
-    response: Response, 
-    username: str = Form(...), 
-    password: str = Form(...), 
+    request: Request,
+    response: Response,
+    username: str = Form(...),
+    password: str = Form(...),
     db: Session = Depends(get_db)
 ):
     usuario_db = db.query(Usuario).filter(Usuario.username == username).first()
-    
-    # SI FALLA: En lugar de "raise HTTPException", recargamos la plantilla con un mensaje
+
+    # SI FALLA: en lugar de "raise HTTPException", recargamos la plantilla con un mensaje
     if not usuario_db or not verificar_contrasena(password, usuario_db.password_hash):
         return templates.TemplateResponse(
-            request, 
-            "login.html", 
+            request,
+            "login.html",
             {"error": "Usuario o contraseña incorrectos. Inténtalo de nuevo."}
         )
-    
+
     # Si todo está bien, continúa igual...
     respuesta_redireccion = RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
     respuesta_redireccion.set_cookie(key="session_user", value=username, httponly=True, samesite="lax")
@@ -140,7 +146,6 @@ def logout(response: Response):
     respuesta_redireccion = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     respuesta_redireccion.delete_cookie("session_user")
     return respuesta_redireccion
-
 
 
 # ---------------------------------------------------------------------------
@@ -174,6 +179,10 @@ def procesar_creacion_proyecto_visual(
     return RedirectResponse(url="/proyectos/panel", status_code=status.HTTP_303_SEE_OTHER)
 
 
+# ---------------------------------------------------------------------------
+# GENERADOR DE CARRUSELES (conectado a generate_slides.py)
+# ---------------------------------------------------------------------------
+
 @app.get("/contenido/generador", response_class=HTMLResponse)
 def vista_generador_panel(
     request: Request,
@@ -181,6 +190,7 @@ def vista_generador_panel(
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     """Muestra el formulario para crear slides e historial."""
+    os.makedirs("static/generados", exist_ok=True)  # por si no existe todavía
     historial = db.query(Contenido).order_by(Contenido.fecha_generado.desc()).all()
     return templates.TemplateResponse(request, "generador.html", {"historial": historial})
 
@@ -188,44 +198,119 @@ def vista_generador_panel(
 @app.post("/contenido/generador/procesar")
 def procesar_generador_slides(
     tipo_slide: str = Form(...),
-    texto_usado: str = Form(...),
+    # Portada
+    portada_text: Optional[str] = Form(None),
+    # Servicio
+    servicio_icon: Optional[str] = Form(None),
+    servicio_title: Optional[str] = Form(None),
+    servicio_desc: Optional[str] = Form(None),
+    # Proceso (hasta 4 pasos)
+    proceso_title: Optional[str] = Form(None),
+    paso1_title: Optional[str] = Form(None), paso1_desc: Optional[str] = Form(None),
+    paso2_title: Optional[str] = Form(None), paso2_desc: Optional[str] = Form(None),
+    paso3_title: Optional[str] = Form(None), paso3_desc: Optional[str] = Form(None),
+    paso4_title: Optional[str] = Form(None), paso4_desc: Optional[str] = Form(None),
+    # FAQ (hasta 2 preguntas)
+    faq_title: Optional[str] = Form(None),
+    pregunta1: Optional[str] = Form(None), respuesta1: Optional[str] = Form(None),
+    pregunta2: Optional[str] = Form(None), respuesta2: Optional[str] = Form(None),
+    # Cierre
+    cierre_title: Optional[str] = Form(None),
+    cierre_desc: Optional[str] = Form(None),
+    cierre_link: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
-    """Aquí se conectará tu script generador de imágenes en el futuro."""
-    # 1. Por ahora, simulamos y guardamos el registro en la base de datos
-    ruta_ficticia = f"static/generados/slide_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.png"
-    
-    nuevo_contenido = Contenido(tipo_slide=tipo_slide, texto_usado=texto_usado, ruta_archivo=ruta_ficticia)
+    """Arma el dict del slide según el tipo elegido, lo dibuja con
+    generate_slides.py, y guarda el registro real en la base de datos."""
+
+    # 1. Construir el dict que generate_slide() espera, según el tipo
+    if tipo_slide == "portada":
+        cfg = {"type": "portada", "text": portada_text or ""}
+        texto_resumen = portada_text or ""
+
+    elif tipo_slide == "servicio":
+        cfg = {
+            "type": "servicio",
+            "icon": servicio_icon or "chat",
+            "title": servicio_title or "",
+            "desc": servicio_desc or "",
+        }
+        texto_resumen = f"{servicio_title or ''} — {servicio_desc or ''}"
+
+    elif tipo_slide == "proceso":
+        pasos = []
+        for t, d in [(paso1_title, paso1_desc), (paso2_title, paso2_desc),
+                     (paso3_title, paso3_desc), (paso4_title, paso4_desc)]:
+            if t:  # solo agrega el paso si tiene título
+                pasos.append({"title": t, "desc": d or ""})
+        cfg = {"type": "proceso", "title": proceso_title or "Cómo funciona", "steps": pasos}
+        texto_resumen = proceso_title or "Proceso"
+
+    elif tipo_slide == "faq":
+        items = []
+        for q, a in [(pregunta1, respuesta1), (pregunta2, respuesta2)]:
+            if q:
+                items.append({"q": q, "a": a or ""})
+        cfg = {"type": "faq", "title": faq_title or "Antes de que preguntes", "items": items}
+        texto_resumen = faq_title or "FAQ"
+
+    elif tipo_slide == "cierre":
+        cfg = {
+            "type": "cierre",
+            "title": cierre_title or "Conversemos",
+            "desc": cierre_desc or "",
+            "link": cierre_link or "",
+        }
+        texto_resumen = cierre_title or "Cierre"
+
+    else:
+        raise HTTPException(status_code=400, detail=f"Tipo de slide desconocido: {tipo_slide}")
+
+    # 2. Generar la imagen de verdad con tu script
+    imagen = generate_slide(cfg, BRAND)
+
+    # 3. Guardarla en static/generados/ con un nombre único
+    os.makedirs("static/generados", exist_ok=True)
+    nombre_archivo = f"slide_{tipo_slide}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.png"
+    ruta_completa = os.path.join("static", "generados", nombre_archivo)
+    imagen.save(ruta_completa)
+
+    # 4. Guardar el registro real (con la ruta real, no ficticia) en la base de datos
+    nuevo_contenido = Contenido(
+        tipo_slide=tipo_slide,
+        texto_usado=texto_resumen,
+        ruta_archivo=ruta_completa.replace("\\", "/"),  # normaliza separadores en Windows
+    )
     db.add(nuevo_contenido)
     db.commit()
-    
-    # [Aquí meteremos la llamada a tu script 'generate_slides.py' para crear el archivo real]
-    
+
     return RedirectResponse(url="/contenido/generador", status_code=status.HTTP_303_SEE_OTHER)
 
+
+# ---------------------------------------------------------------------------
+# Raíz y Dashboard
+# ---------------------------------------------------------------------------
 
 @app.get("/", response_class=HTMLResponse)
 def mostrar_login(request: Request):
     """Muestra la pantalla visual de login al entrar a la raíz."""
-    # CORRECCIÓN: Envío posicional estricto para evitar el bug de Starlette/Jinja2
     return templates.TemplateResponse(request, "login.html")
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
 def mostrar_dashboard(
-    request: Request, 
+    request: Request,
     db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     """Pantalla principal de la wiki que cuenta tus métricas."""
     total_proyectos = db.query(Proyecto).count()
     total_contenido = db.query(Contenido).count()
-    
-    # CORRECCIÓN: Pasamos los parámetros posicionales fijos
+
     return templates.TemplateResponse(
-        request, 
-        "dashboard.html", 
+        request,
+        "dashboard.html",
         {
             "usuario": usuario_autenticado,
             "proyectos_count": total_proyectos,
@@ -240,7 +325,7 @@ def mostrar_dashboard(
 
 @app.get("/proyectos", response_model=List[ProyectoOut])
 def listar_proyectos(
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     return db.query(Proyecto).order_by(Proyecto.fecha_inicio.desc()).all()
@@ -248,8 +333,8 @@ def listar_proyectos(
 
 @app.post("/proyectos", response_model=ProyectoOut)
 def crear_proyecto(
-    data: ProyectoIn, 
-    db: Session = Depends(get_db), 
+    data: ProyectoIn,
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     nuevo = Proyecto(**data.model_dump())
@@ -261,8 +346,8 @@ def crear_proyecto(
 
 @app.get("/proyectos/{proyecto_id}", response_model=ProyectoOut)
 def ver_proyecto(
-    proyecto_id: int, 
-    db: Session = Depends(get_db), 
+    proyecto_id: int,
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     proyecto = db.get(Proyecto, proyecto_id)
@@ -273,9 +358,9 @@ def ver_proyecto(
 
 @app.put("/proyectos/{proyecto_id}", response_model=ProyectoOut)
 def editar_proyecto(
-    proyecto_id: int, 
-    data: ProyectoIn, 
-    db: Session = Depends(get_db), 
+    proyecto_id: int,
+    data: ProyectoIn,
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     proyecto = db.get(Proyecto, proyecto_id)
@@ -290,8 +375,8 @@ def editar_proyecto(
 
 @app.delete("/proyectos/{proyecto_id}")
 def borrar_proyecto(
-    proyecto_id: int, 
-    db: Session = Depends(get_db), 
+    proyecto_id: int,
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     proyecto = db.get(Proyecto, proyecto_id)
@@ -308,7 +393,7 @@ def borrar_proyecto(
 
 @app.get("/empresa", response_model=EmpresaOut)
 def ver_empresa(
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     empresa = db.query(Empresa).first()
@@ -322,8 +407,8 @@ def ver_empresa(
 
 @app.put("/empresa", response_model=EmpresaOut)
 def editar_empresa(
-    data: EmpresaIn, 
-    db: Session = Depends(get_db), 
+    data: EmpresaIn,
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     empresa = db.query(Empresa).first()
@@ -343,7 +428,7 @@ def editar_empresa(
 
 @app.get("/contenido", response_model=List[ContenidoOut])
 def listar_contenido(
-    db: Session = Depends(get_db), 
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     return db.query(Contenido).order_by(Contenido.fecha_generado.desc()).all()
@@ -351,8 +436,8 @@ def listar_contenido(
 
 @app.post("/contenido", response_model=ContenidoOut)
 def crear_contenido(
-    data: ContenidoIn, 
-    db: Session = Depends(get_db), 
+    data: ContenidoIn,
+    db: Session = Depends(get_db),
     usuario_autenticado: str = Depends(obtener_usuario_actual)
 ):
     nuevo = Contenido(**data.model_dump())
@@ -361,6 +446,10 @@ def crear_contenido(
     db.refresh(nuevo)
     return nuevo
 
+
+# ---------------------------------------------------------------------------
+# Actividades (tareas) dentro de cada proyecto
+# ---------------------------------------------------------------------------
 
 @app.post("/proyectos/{proyecto_id}/actividades")
 def agregar_actividad_proyecto(
@@ -387,8 +476,37 @@ def cambiar_estado_actividad(
     tarea = db.get(Actividad, actividad_id)
     if not tarea:
         raise HTTPException(status_code=404, detail="Tarea no encontrada")
-    
+
     tarea.estado = nuevo_estado
     db.commit()
     return RedirectResponse(url=f"/proyectos/ver/{tarea.proyecto_id}", status_code=status.HTTP_303_SEE_OTHER)
 
+
+@app.get("/proyectos/ver/{proyecto_id}", response_class=HTMLResponse)
+def ver_detalle_proyecto_visual(
+    proyecto_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    usuario_autenticado: str = Depends(obtener_usuario_actual)
+):
+    """Carga la pantalla con el detalle de un proyecto y todas sus actividades vinculadas."""
+    proyecto = db.get(Proyecto, proyecto_id)
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+
+    actividades = (
+        db.query(Actividad)
+        .filter(Actividad.proyecto_id == proyecto_id)
+        .order_by(Actividad.fecha_creacion.asc())
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        request,
+        "detalle_proyecto.html",
+        {
+            "proyecto": proyecto,
+            "actividades": actividades,
+            "usuario": usuario_autenticado
+        }
+    )
