@@ -1,46 +1,61 @@
 {% extends "base.html" %}
-{% block title %}Generador de Contenido — AnnDesign{% endblock %}
+{% block title %}Generador de Carruseles ZIP — AnnDesign{% endblock %}
 
 {% block content %}
-<h2>✨ Generador Automatizado de Slides</h2>
-<p>Escribe el texto de tu pieza gráfica para Instagram y guárdala directamente en tu historial.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 15px; margin-bottom: 30px;">
+    <div>
+        <h2 style="color: var(--gold); margin: 0;">✨ Generador Masivo de Carruseles (.ZIP)</h2>
+        <p style="margin: 5px 0 0 0; color: #555;">Escribe una sola frase y el backend ejecutará tu token de Gemini y Pillow para entregarte un paquete comprimido listo para publicar.</p>
+    </div>
+</div>
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
     
-    <!-- Formulario del Generador -->
-    <div class="card-panel">
-        <h3>Configurar Slide</h3>
+    <!-- LADO IZQUIERDO: Formulario de Automatización Completa -->
+    <div class="card-panel" style="margin-top: 0; height: fit-content;">
+        <h3>Disparar Pipeline Inteligente</h3>
         <form action="/contenido/generador/procesar" method="POST">
             <div class="form-group">
-                <label for="tipo_slide">Tipo de Slide</label>
-                <select id="tipo_slide" name="tipo_slide">
-                    <option value="portada">Portada de Impacto</option>
-                    <option value="servicio">Presentación de Servicio</option>
-                    <option value="proceso">Paso a Paso / Proceso</option>
-                    <option value="faq">Preguntas Frecuentes</option>
-                    <option value="cierre">Llamado a la Acción (Cierre)</option>
-                </select>
+                <label for="texto_usado">Frase, Idea Base o Concepto del Carrusel</label>
+                <textarea id="texto_usado" name="texto_usado" rows="8" required placeholder="Ej: Escribe un carrusel de 4 páginas explicando por qué delegar el desarrollo web ayuda a un diseñador freelance..." style="width: 100%; resize: vertical; box-sizing: border-box; font-size: 14px; padding: 12px;"></textarea>
             </div>
-            <div class="form-group">
-                <label for="texto_usado">Texto Principal del Slide</label>
-                <textarea id="texto_usado" name="texto_usado" rows="5" required placeholder="Escribe el copy que irá dentro del diseño..."></textarea>
-            </div>
-            <button type="submit" class="btn-gold" style="width: 100%;">⚡ Generar Imagen y Registrar</button>
+            
+            <button type="submit" class="btn-gold" style="width: 100%; padding: 14px; margin-top: 10px; font-size: 15px; letter-spacing: 0.5px; font-weight: bold;">
+                ⚡ Crear Carrusel Completo y Descargar ZIP
+            </button>
         </form>
     </div>
 
-    <!-- Historial de imágenes creadas de la tabla 'contenido' -->
-    <div class="card-panel">
-        <h3>Historial Reciente</h3>
-        <div style="max-height: 400px; overflow-y: auto;">
+    <!-- LADO DERECHO: Historial de Paquetes Generados -->
+    <div class="card-panel" style="margin-top: 0;">
+        <h3>Histórico de Descargas y Paquetes</h3>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Accede a los archivos comprimidos generados con anterioridad en tu servidor.</p>
+        
+        <div style="max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
             {% for item in historial %}
-            <div style="padding: 12px; border-bottom: 1px solid #eee; font-size: 14px;">
-                <span style="color: var(--gold); font-weight: bold; text-transform: uppercase; font-size: 12px;">{{ item.tipo_slide }}</span>
-                <p style="margin: 5px 0; color: #555;">"{{ item.texto_usado }}"</p>
-                <small style="color: #999;">Generado el: {{ item.fecha_generado.strftime('%d/%m/%Y %H:%M') }}</small>
+            <div style="display: flex; gap: 15px; align-items: center; padding: 15px; background: #fff; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); border-left: 4px solid var(--gold);">
+                
+                <!-- Icono representativo de Archivo Comprimido ZIP -->
+                <div style="width: 60px; height: 60px; background: #fdfaf2; border-radius: 6px; flex-shrink: 0; border: 1px solid #f0e6cc; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    📦
+                </div>
+                
+                <div style="flex: 1;">
+                    <span style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 10px; background: #eee; padding: 2px 6px; border-radius: 4px;">
+                        ZIP BUNDLE
+                    </span>
+                    <p style="margin: 6px 0 4px 0; color: #333; font-size: 13px; font-weight: 600; line-height: 1.4;">
+                        Idea: "{{ item.texto_usado }}"
+                    </p>
+                    <a href="/{{ item.ruta_archivo }}" download style="color: var(--gold); font-size: 12px; font-weight: bold; text-decoration: none; display: inline-block; margin-top: 2px;">
+                        📥 Re-descargar archivo (.zip)
+                    </a>
+                </div>
             </div>
             {% else %}
-            <p style="text-align: center; color: #999; padding-top: 20px;">Aún no has generado piezas de contenido.</p>
+            <div style="text-align: center; color: #999; padding: 40px 10px; border: 2px dashed #eee; border-radius: 8px;">
+                Aún no has generado paquetes masivos. Introduce tu concepto a la izquierda para empezar.
+            </div>
             {% endfor %}
         </div>
     </div>

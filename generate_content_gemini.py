@@ -5,7 +5,7 @@ import json
 from google import genai
 from google.genai import types
 
-load_dotenvd()
+load_dotenv()
 MODEL_NAME = "gemini-3.5-flash"  # cámbialo aquí si Google lo renombra
 
 # ---------------------------------------------------------------------------
@@ -50,8 +50,8 @@ Reglas:
 
 def generate_content(topic: str) -> list:
     #api_key = os.environ.get("GEMINI_API_KEY")
-    GEMINI_API_KEY=os.environ.get(GEMINI_API_KEY)
-    api_key =GEMINI_API_KEY
+    GEMINI_API=os.environ.get("GEMINI_API_KEY")
+    api_key =GEMINI_API
     if not api_key:
         print("No encontré la variable de entorno GEMINI_API_KEY.")
         print("Revisa las instrucciones al inicio de este archivo.")

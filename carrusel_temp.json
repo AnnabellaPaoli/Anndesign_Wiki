@@ -1,0 +1,50 @@
+[
+    {
+        "type": "portada",
+        "name": "slide1-portada",
+        "text": "Las tecnologías que definen el desarrollo web moderno."
+    },
+    {
+        "type": "servicio",
+        "name": "slide2-frontend",
+        "icon": "browser",
+        "title": "Next.js y React",
+        "desc": "La base para interfaces interactivas y veloces. Optimizan el rendimiento y garantizan un excelente posicionamiento en buscadores."
+    },
+    {
+        "type": "servicio",
+        "name": "slide3-backend",
+        "icon": "stack",
+        "title": "Supabase y PostgreSQL",
+        "desc": "Gestión de datos robusta, segura y en tiempo real. La infraestructura sólida que tu negocio necesita para escalar sin fricciones."
+    },
+    {
+        "type": "servicio",
+        "name": "slide4-automation",
+        "icon": "chat",
+        "title": "Integración con IA",
+        "desc": "Conectamos tu web con modelos de lenguaje y automatizaciones que asisten a tus usuarios y optimizan tus procesos internos."
+    },
+    {
+        "type": "faq",
+        "name": "slide5-faq",
+        "title": "Elegir con claridad",
+        "items": [
+            {
+                "q": "¿Cómo saber qué tecnología me conviene?",
+                "a": "Analizamos los objetivos de tu negocio para elegir herramientas que resuelvan tus necesidades actuales y futuras."
+            },
+            {
+                "q": "¿Es complejo migrar una web existente?",
+                "a": "Diseñamos transiciones limpias y progresivas para mantener la estabilidad de tu operación en todo momento."
+            }
+        ]
+    },
+    {
+        "type": "cierre",
+        "name": "slide6-cierre",
+        "title": "Tu proyecto en manos expertas",
+        "desc": "Desarrollamos soluciones web a medida, uniendo diseño sofisticado e infraestructura de última generación.",
+        "link": "studioanndesign.com"
+    }
+]

@@ -1,71 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Proyectos — AnnDesign{% endblock %}
-
 {% block content %}
 <h2>📁 Gestión de Proyectos</h2>
-<p>Administra tus clientes, estados de diseño y desarrollo actuales.</p>
-
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-    
-    <!-- Tabla de Proyectos Existentes -->
     <div class="card-panel">
-        <h3>Lista de Proyectos</h3>
+        <h3>Lista General</h3>
         <table>
-            <thead>
-                <tr>
-                    <th>Proyecto</th>
-                    <th>Cliente</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Proyecto</th><th>Cliente</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody>
                 {% for p in proyectos %}
                 <tr>
                     <td><strong>{{ p.nombre_proyecto }}</strong></td>
-                    <td>{{ p.cliente or 'Sin asignar' }}</td>
-                    <td><span style="padding: 4px 8px; border-radius: 4px; font-size: 13px; background: #eef2f7;">{{ p.estado }}</span></td>
+                    <td>{{ p.cliente or 'S/A' }}</td>
+                    <td>{{ p.estado }}</td>
                     <td>
-                        <a href="/proyectos/ver/{{ p.id }}" style="color: var(--gold); text-decoration: none; font-weight: bold;">Ver / Editar</a>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <a href="/proyectos/ver/{{ p.id }}" style="color: var(--gold); font-weight: bold; text-decoration: none;">Ver Histórico</a>
+                            
+                            <!-- Formulario en línea para borrar de inmediato -->
+                            <form action="/proyectos/{{ p.id }}/borrar" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este proyecto y todo su histórico de tareas?');" style="margin: 0;">
+                                <button type="submit" style="background: none; border: none; color: #d9534f; cursor: pointer; font-weight: bold; font-size: 13px; padding: 0;">[Eliminar]</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% else %}
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #999;">No hay proyectos registrados todavía.</td>
-                </tr>
+                <tr><td colspan="4">No hay proyectos.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
-    <!-- Formulario para agregar uno nuevo de inmediato -->
     <div class="card-panel">
-        <h3>Añadir Nuevo Proyecto</h3>
+        <h3>Nuevo Cliente</h3>
         <form action="/proyectos/panel/crear" method="POST">
-            <div class="form-group">
-                <label for="nombre_proyecto">Nombre del Proyecto</label>
-                <input type="text" id="nombre_proyecto" name="nombre_proyecto" required placeholder="Ej: Rediseño E-commerce">
-            </div>
-            <div class="form-group">
-                <label for="cliente">Cliente</label>
-                <input type="text" id="cliente" name="cliente" placeholder="Nombre de la empresa/persona">
-            </div>
-            <div class="form-group">
-                <label for="estado">Estado Inicial</label>
-                <select id="estado" name="estado">
-                    <option value="en conversación">En conversación</option>
-                    <option value="en diseño">En diseño</option>
-                    <option value="en desarrollo">En desarrollo</option>
-                    <option value="entregado">Entregado</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="notas">Notas Iniciales</label>
-                <textarea id="notas" name="notas" rows="3" placeholder="Detalles o requerimientos..."></textarea>
-            </div>
-            <button type="submit" class="btn-gold" style="width: 100%;">Guardar Proyecto</button>
+            <div class="form-group"><label>Nombre</label><input type="text" name="nombre_proyecto" required></div>
+            <div class="form-group"><label>Cliente</label><input type="text" name="cliente"></div>
+            <div class="form-group"><label>Estado</label><select name="estado"><option>en conversación</option><option>en diseño</option><option>en desarrollo</option></select></div>
+            <div class="form-group"><label>Notas</label><textarea name="notas"></textarea></div>
+            <button type="submit" class="btn-gold" style="width:100%;">Guardar</button>
         </form>
     </div>
-
 </div>
 {% endblock %}
