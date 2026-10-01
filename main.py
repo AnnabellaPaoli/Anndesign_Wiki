@@ -2,6 +2,9 @@ import json
 import sys
 import io
 import os
+import zipfile
+from generate_slides import generate_slide, BRAND
+from generate_content_gemini import generate_content
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
